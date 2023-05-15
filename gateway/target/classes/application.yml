@@ -1,0 +1,24 @@
+server:
+  port: 8888
+
+spring:
+  application:
+    name: plan-gateway
+  cloud:
+    #注册中心配置
+    nacos:
+      server-addr: http://118.178.243.174:8848
+      #服务发现
+      discovery:
+        server-addr: http://118.178.243.174:8848
+        namespace: 17c292c6-c34b-4d40-9ef2-33fc673b8342
+        group: dev
+    #网关配置
+    gateway:
+      routes:
+        - id: user-center-8091
+          uri: http://localhost:8091
+          predicates:
+            - Path=/user/**
+
+
