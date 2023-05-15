@@ -10,6 +10,21 @@ public interface ConstantRedisKey {
     /**
      * 短信登录
      */
-    String USER_MESSAGE_LOGIN_CODE = "user:message:login:code";
+    String USER_MESSAGE_LOGIN_CODE = "user:message:login:code:";
+
+    /**
+     * 用户身份认证
+     */
+    String USER_IDENTITY_AUTH = "user:identity:auth:";
+
+    /**
+     * ip黑名单
+     */
+    String IP_BLACKLIST_SET = "ip:blacklist:set";
+
+    /**
+     * 用户黑名单
+     */
+    String USER_BLACKLIST_SET = "user:blacklist:set";
 
 }

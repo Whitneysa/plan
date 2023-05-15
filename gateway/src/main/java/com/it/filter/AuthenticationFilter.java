@@ -1,6 +1,7 @@
 package com.it.filter;
+import com.google.common.base.Strings;
+import constants.ConstantRedisKey;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.cloud.gateway.support.ipresolver.XForwardedRemoteAddressResolver;
@@ -30,7 +31,7 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
         //获取请求
         ServerHttpRequest request = exchange.getRequest();
         String authorization = request.getQueryParams().getFirst("authorization");
-        String token = Strings.EMPTY;
+        String token = org.apache.logging.log4j.util.Strings.EMPTY;
 
         //解析jwt
         try {
@@ -44,11 +45,16 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
             return exchange.getResponse().setComplete();
         }
 
-        //
+        //获取用户id,判断用户角色是否登录(是否再缓存中)
+        String jsonUser = stringRedisTemplate.opsForValue().get(ConstantRedisKey.USER_IDENTITY_AUTH + token);
+        if (Strings.isNullOrEmpty(jsonUser)){
+            return exchange.getResponse().setComplete();
+        }
 
-        return null;
+        return chain.filter(exchange);
     }
 
+    //加载过滤器的顺序，数字越小优先级越高
     @Override
     public int getOrder() {
         return 0;

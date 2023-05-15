@@ -6,11 +6,12 @@ import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
 @TableName("user")
-public class User {
+public class User implements Serializable {
 
      @TableId(value = "user_id",type = IdType.ASSIGN_ID)
      private String userId;
