@@ -7,10 +7,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import response.Result;
 
-@FeignClient(name = "third-party-service")
-public interface ThirdPartyClient {
-
-    @GetMapping(value = "/api/msm/send/{phone}/{code}")
-    public Result codeLogin(@PathVariable String phone, @PathVariable String code);
-
-}
+//@FeignClient(name = "third-party-service")
+//public interface ThirdPartyClient {
+//
+//    @GetMapping(value = "/api/msm/send/{phone}/{code}")
+//    public Result codeLogin(@PathVariable String phone, @PathVariable String code);
+//
+//}

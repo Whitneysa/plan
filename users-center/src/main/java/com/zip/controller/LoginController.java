@@ -1,6 +1,6 @@
 package com.zip.controller;
 
-import com.zip.client.ThirdPartyClient;
+
 import com.zip.pojo.dto.LoginDTO;
 import com.zip.pojo.dto.MessageLoginDTO;
 import com.zip.pojo.dto.RegisterDTO;
@@ -25,8 +25,8 @@ public class LoginController {
     @Resource
     private LoginService loginService;
 
-    @Resource
-    private ThirdPartyClient thirdPartyClient;
+//    @Resource
+//    private ThirdPartyClient thirdPartyClient;
 
 //    @GetMapping("code")
 //    public Result<String> getCode(HttpServletResponse response) throws IOException {
