@@ -1,4 +1,5 @@
 package com.it.filter;
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Strings;
 import constants.ConstantRedisKey;
 import lombok.extern.slf4j.Slf4j;
@@ -10,8 +11,10 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
+import pojo.user.User;
 import reactor.core.publisher.Mono;
 import utils.JwtUtil;
+import utils.UserInfoHolder;
 
 import javax.annotation.Resource;
 import java.net.InetSocketAddress;
@@ -50,6 +53,9 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
         if (Strings.isNullOrEmpty(jsonUser)){
             return exchange.getResponse().setComplete();
         }
+
+        User user = JSONObject.parseObject(jsonUser, User.class);
+        UserInfoHolder.setUserInfo(user);
 
         return chain.filter(exchange);
     }
