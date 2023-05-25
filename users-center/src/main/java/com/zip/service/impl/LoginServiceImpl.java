@@ -8,6 +8,7 @@ import cn.hutool.core.lang.Validator;
 import cn.hutool.core.util.RandomUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.zip.dao.UserDao;
+import com.zip.dao.UserInfoDao;
 import com.zip.pojo.dto.LoginDTO;
 import com.zip.pojo.dto.MessageLoginDTO;
 import com.zip.pojo.dto.RegisterDTO;
@@ -29,6 +30,7 @@ import pojo.user.User;
 import pojo.user.UserInfo;
 import response.RespResult;
 import response.Result;
+import utils.JwtUtil;
 import utils.MD5Utils;
 
 import javax.annotation.Resource;
@@ -38,6 +40,8 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+
+import static constants.CommonConstant.TOKEN_EXPIRE_TIME;
 
 @Service
 public class LoginServiceImpl implements LoginService {
@@ -51,15 +55,20 @@ public class LoginServiceImpl implements LoginService {
     @Resource
     private UserDao userDao;
 
+    @Resource
+    private UserInfoDao userInfoDao;
+
     @Override
     public Result<String> getCaptcha(HttpServletResponse response) throws IOException {
-        CircleCaptcha captcha = CaptchaUtil.createCircleCaptcha(200, 100, 4, 5);
         //获取生成的二维码
+        CircleCaptcha captcha = CaptchaUtil.createCircleCaptcha(200, 100, 4, 5);
         String code = captcha.getCode();
+
         //生成uuid
         String uuid = UUID.randomUUID().toString();
         stringRedisTemplate.opsForValue().set(ConstantRedisKey.USER_LOGIN_AND_REGISTER_CAPTCHA + uuid
                 , code, ConstantRedisKey.LOGIN_CAPTCHA_EXPIRE_TIME, TimeUnit.SECONDS);
+
         // 将验证码图片的二进制数据写入【响应体 response 】
         response.setContentType("text/html;charset=utf-8");
         response.setContentType("image/png");
@@ -103,30 +112,54 @@ public class LoginServiceImpl implements LoginService {
 
     @Override
     public Result<LoginVO> login(LoginDTO loginDTO) {
-        String sysCode = stringRedisTemplate.opsForValue().get(loginDTO.getCode());
+        //校验
+        String sysCode = stringRedisTemplate.opsForValue().get(ConstantRedisKey.USER_LOGIN_AND_REGISTER_CAPTCHA
+                + loginDTO.getCode());
         if (Strings.isNullOrEmpty(sysCode) || !loginDTO.getCode().equals(sysCode)){
             return RespResult.fail(CommonCodeEnum.CAPTCHA_INVALID);
         }
-
         User user = userDao.getUserByUsername(loginDTO.getUsername());
         if (Objects.isNull(user) ||
                 user.getPassword().equals(MD5Utils.md5(loginDTO.getPassword() + user.getSalt()))){
             return RespResult.fail(CommonCodeEnum.USERNAME_OR_PASSWORD_ERROR);
         }
 
-        //返回脱敏数据
-        Base64.encode(user.getUserId());
+        //生成jwt
+        String userId = Base64.encode(user.getUserId());
+        String token = JwtUtil.createJWT(null, userId, TOKEN_EXPIRE_TIME);
+        UserInfo userInfo = userInfoDao.getByUserId(userId);
 
-        return null;
+        //封装返回结果
+        LoginVO loginVO = new LoginVO();
+        loginVO.setAvatar(userInfo.getAvatar());
+        loginVO.setNickname(userInfo.getNickName());
+        loginVO.setToken(token);
+        return RespResult.success(loginVO);
     }
 
     @Override
     public Result<LoginVO> messageLogin(MessageLoginDTO messageLoginDTO) {
-        User user = userDao.getUserByPhone(messageLoginDTO.getPhone());
         //手机号是否存在
+        User user = userDao.getUserByPhone(messageLoginDTO.getPhone());
         SystemAssert.isNull(user, CommonCodeEnum.USER_PHONE_NOT_FIND);
 
+        //校验验证码
+        String captcha = stringRedisTemplate.opsForValue().get(ConstantRedisKey.USER_MESSAGE_LOGIN_CODE
+                + messageLoginDTO.getPhone());
+        if (Strings.isNullOrEmpty(captcha) || !messageLoginDTO.getCaptcha().equals(captcha)) {
+            return RespResult.fail(CommonCodeEnum.CAPTCHA_INVALID);
+        }
 
+        //生成jwt
+        UserInfo userInfo = userInfoDao.getByUserId(user.getUserId());
+        String userId = Base64.encode(user.getUserId());
+        String token = JwtUtil.createJWT(null, userId, TOKEN_EXPIRE_TIME);
+
+        //封装返回结果
+        LoginVO loginVO = new LoginVO();
+        loginVO.setAvatar(userInfo.getAvatar());
+        loginVO.setNickname(userInfo.getNickName());
+        loginVO.setToken(token);
         return null;
     }
 
