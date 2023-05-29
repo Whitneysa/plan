@@ -1,6 +1,6 @@
 package com.it.config;
 
-import com.it.dao.WhiteListDao;
+import com.it.facade.UsersCenterFacade;
 import constants.ConstantRedisKey;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
@@ -14,13 +14,13 @@ import java.util.List;
 public class WhiteListConfig {
 
     @Resource
-    private WhiteListDao whiteListDao;
+    private UsersCenterFacade usersCenterFacade;
 
     @Resource
     private RedisTemplate<String, Object> redisTemplate;
 
     private void initWhiteList(){
-        List<WhiteList> whiteLists = whiteListDao.getAll();
+        List<WhiteList> whiteLists = usersCenterFacade.getAllWhiteList();
         whiteLists.forEach(whiteList -> {
             redisTemplate.opsForSet().add(ConstantRedisKey.PATH_WHITE_SET, whiteList);
         });
