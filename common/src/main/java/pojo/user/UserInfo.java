@@ -5,11 +5,11 @@ import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
-@TableName("user_info")
 @Data
-public class UserInfo {
+public class UserInfo implements Serializable {
     @TableId
     private String userInfoId;
 

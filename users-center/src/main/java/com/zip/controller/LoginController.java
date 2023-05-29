@@ -19,7 +19,7 @@ import java.io.IOException;
 
 @RestController
 @Api
-@RequestMapping("/user")
+@RequestMapping("/user/loginModel")
 public class LoginController {
 
     @Resource
@@ -48,7 +48,6 @@ public class LoginController {
     public Result sendMessage(@RequestParam("phone") String phone) {
         return loginService.sendMessage(phone);
     }
-
 
     @GetMapping("/checkUserName")
     @ApiOperation("校验用户名")
