@@ -1,6 +1,6 @@
 package com.it.controller;
 
-import com.it.service.WhileService;
+import com.it.service.WhileListService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +15,7 @@ import javax.annotation.Resource;
 public class WhileListController {
 
     @Resource
-    private WhileService whileService;
+    private WhileListService whileService;
 
     @ApiOperation("新增白名单")
     @PostMapping("/add")
