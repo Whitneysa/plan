@@ -90,6 +90,11 @@
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+        </dependency>
+
         <!--springcloud 版本管理 -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>

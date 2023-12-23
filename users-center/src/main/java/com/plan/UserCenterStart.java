@@ -1,4 +1,4 @@
-package com.it;
+package com.plan;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -8,8 +8,9 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @SpringBootApplication
 @EnableDiscoveryClient
 @EnableFeignClients
-public class GateWayStart {
+//@MapperScan("com.example.demo.**.mapper")
+public class UserCenterStart {
     public static void main(String[] args) {
-        SpringApplication.run(GateWayStart.class,args);
+        SpringApplication.run(UserCenterStart.class,args);
     }
 }

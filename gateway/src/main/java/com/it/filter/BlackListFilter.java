@@ -6,7 +6,7 @@ import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.cloud.gateway.support.ipresolver.XForwardedRemoteAddressResolver;
 import org.springframework.core.Ordered;
-import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import pojo.user.User;
@@ -21,7 +21,7 @@ import java.net.InetSocketAddress;
 public class BlackListFilter implements GlobalFilter, Ordered {
 
     @Resource
-    private StringRedisTemplate stringRedisTemplate;
+    private RedisTemplate<String, Object> redisTemplate;
 
     /**
      * 黑名单
@@ -29,6 +29,11 @@ public class BlackListFilter implements GlobalFilter, Ordered {
      */
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        //白名单过滤
+        String path = exchange.getRequest().getURI().getPath();
+        if (redisTemplate.opsForSet().isMember(ConstantRedisKey.IP_BLACKLIST_SET, path)) {
+            return chain.filter(exchange);
+        }
 
         //获取用户ip
         XForwardedRemoteAddressResolver resolver = XForwardedRemoteAddressResolver.maxTrustedIndex(1);
@@ -36,14 +41,14 @@ public class BlackListFilter implements GlobalFilter, Ordered {
         String hostAddress = inetSocketAddress.getAddress().getHostAddress();
 
         //ip黑名单
-        Boolean ipExistFlag = stringRedisTemplate.opsForSet().isMember(ConstantRedisKey.IP_BLACKLIST_SET, hostAddress);
+        Boolean ipExistFlag = redisTemplate.opsForSet().isMember(ConstantRedisKey.IP_BLACKLIST_SET, hostAddress);
         if (ipExistFlag){
             return exchange.getResponse().setComplete();
         }
 
         //用户黑名单
         User userInfo = UserInfoHolder.getUserInfo();
-        Boolean userExistFlag = stringRedisTemplate.opsForSet()
+        Boolean userExistFlag = redisTemplate.opsForSet()
                 .isMember(ConstantRedisKey.USER_BLACKLIST_SET, userInfo.getUserId());
         if (userExistFlag){
             return exchange.getResponse().setComplete();
@@ -55,13 +60,11 @@ public class BlackListFilter implements GlobalFilter, Ordered {
         //用户访问次数统计
 
 
-
-
         return chain.filter(exchange);
     }
 
     @Override
     public int getOrder() {
-        return 1;
+        return 0;
     }
 }

@@ -7,6 +7,7 @@ import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.cloud.gateway.support.ipresolver.XForwardedRemoteAddressResolver;
 import org.springframework.core.Ordered;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
@@ -24,13 +25,19 @@ import java.net.InetSocketAddress;
 public class AuthenticationFilter implements GlobalFilter, Ordered {
 
     @Resource
-    private StringRedisTemplate stringRedisTemplate;
+    private RedisTemplate<String, Object> redisTemplate;
 
     /**
      * 认证
      */
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        //白名单过滤
+        String path = exchange.getRequest().getURI().getPath();
+        if (redisTemplate.opsForSet().isMember(ConstantRedisKey.IP_BLACKLIST_SET, path)) {
+            return chain.filter(exchange);
+        }
+
         //获取请求
         ServerHttpRequest request = exchange.getRequest();
         String authorization = request.getQueryParams().getFirst("authorization");
@@ -49,7 +56,7 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
         }
 
         //获取用户id,判断用户角色是否登录(是否再缓存中)
-        String jsonUser = stringRedisTemplate.opsForValue().get(ConstantRedisKey.USER_IDENTITY_AUTH + token);
+        String jsonUser = (String) redisTemplate.opsForValue().get(ConstantRedisKey.USER_IDENTITY_AUTH + token);
         if (Strings.isNullOrEmpty(jsonUser)){
             return exchange.getResponse().setComplete();
         }
@@ -63,6 +70,6 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
     //加载过滤器的顺序，数字越小优先级越高
     @Override
     public int getOrder() {
-        return 0;
+        return 1;
     }
 }

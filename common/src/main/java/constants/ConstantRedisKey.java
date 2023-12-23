@@ -20,11 +20,16 @@ public interface ConstantRedisKey {
     /**
      * ip黑名单
      */
-    String IP_BLACKLIST_SET = "ip:blacklist:set";
+    String IP_BLACKLIST_SET = "ip:blacklist:set:";
 
     /**
      * 用户黑名单
      */
-    String USER_BLACKLIST_SET = "user:blacklist:set";
+    String USER_BLACKLIST_SET = "user:blacklist:set:";
+
+    /**
+     * 白名单
+     */
+    String PATH_WHITE_SET = "path:white:set:";
 
 }
